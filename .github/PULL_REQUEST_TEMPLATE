@@ -1,0 +1,26 @@
+- [ ] is this Pull Request ready for review?
+  - [ ] are you happy with test coverage?
+  - [ ] are you happy with the documentation (inc the README)?
+  - [ ] are there any build or deploy steps that need to be taken and are these documented (static compilations, migrations, config changes, version bumps, etc)?
+  - [ ] have you tested this with representative data?
+  - [ ] have you checked to ensure there is no DEBUG code or critical TODOs left in?
+  - [ ] have you checked these changes do not introduce performance problems?
+  - [ ] is introduced technical debt and/or unfinished parts of this captured in issues?
+  - [ ] has this work been signed off by the relevant project stakeholders?
+  - [ ] have you considered if this pull request should trigger the full CHANGE_CHECKLIST?
+  - [ ] have you checked that no secrets (passwords, access keys, etc) are present in **any** of the constituent commits (not just in the final PR)?
+
+**What does this Pull Request do and why??**
+Please explain what your request accomplishes and how. (This should be the bulk of the PR.)
+
+**What are the relevant Github Issues or support tickets?**
+List any issue numbers or ticket URLs here.
+
+**Where should the reviewer start?**
+List any relevant files, URLs, or assets that the reviewer should inspect first to help them get started.
+
+**How can the reviewer see this in action and/or test?**
+Refer to test HOWTO, etc
+
+**Compliance**
+Are there security, data protection and privacy considerations that need reviewing? (If no, that means you are confident we meet our commitments.)
