@@ -1,0 +1,111 @@
+/**
+    A fairly simple PID line follower
+    Will attempt to follow the left edge of the line
+    Really can't cope with straying over the right edge!
+*/
+
+
+#include "util.h";
+
+/*
+    the assumption is that the line edge will result in
+    a read somewhere in the midpoint of these calibration values
+    - therefore we have a 'zero' error point
+*/
+#define LIGHT_MIN 20 // min light sensor reading from calibration
+#define LIGHT_MAX 60 // max light sensor reading from calibration
+
+#define SPEED 30 // max 100/2
+
+#define MOTOR_BOTH OUT_BC
+#define MOTOR_LEFT OUT_B
+#define MOTOR_RIGHT OUT_C
+#define LIGHT IN_3
+#define TURN_FACTOR 5
+
+float error = 0.0;
+float integral = 0.0;
+float deriv = 0.0;
+float last_error = 0.0;
+float turn = 0.0;
+float last_read = 0.0;
+
+void drive(byte motor, int speed) {
+    OnFwd(motor, speed);
+    //OnFwdReg(motor, speed, OUT_REGMODE_SPEED);
+}
+void setTurn(float t) {
+    /**
+        turn: -1 -> 1 == left -> right
+    */
+    //drive(MOTOR_LEFT, SPEED * (t + 0.4));
+    //drive(MOTOR_RIGHT, SPEED * (0.4 - t));
+    if( t < 0 ) {
+        drive(MOTOR_LEFT, (1+2*t) * SPEED);
+        drive(MOTOR_RIGHT, SPEED);
+    } else {
+        drive(MOTOR_LEFT, SPEED);
+        drive(MOTOR_RIGHT, (1-2*t) * SPEED);
+    }
+}
+void setup() {
+    SetSensorLight(LIGHT);
+}
+
+float getError() {
+    /**
+        Low value = right of edge (dark area)
+        High value = left of edge (light area)
+        we need to flip so our error is negative when we are
+        to the left (since we define positive turn to be
+        to the right)
+    */
+    const float LIGHT_ZERO = (LIGHT_MAX + LIGHT_MIN) / 2;
+    last_read = Sensor(LIGHT)
+    //return LIGHT_ZERO - (1.0 * Sensor(LIGHT));
+    return LIGHT_ZERO - last_read;
+}
+
+float clamp(float t) {
+    if( t > 1.0 ) {
+        return 1.0;
+    }
+    if( t < -1.0 ) {
+        return -1.0;
+    }
+    return t;
+}
+
+
+task run() {
+    const float Kp = -0.06;
+    const float Ki = -0.00003;
+    const float Kd = -0.001;
+
+    setup();
+
+    while (true) {
+        // we assume a fixed looptime to give us dt
+        // - in reality the loop will execute somewhat randomly
+        error = getError();
+        integral += error;
+        deriv = error - last_error;
+
+        turn = Kp * error + Ki * integral + Kd * deriv;
+        turn = clamp(turn);
+        setTurn(turn);
+
+        last_error = error;
+    }
+}
+
+task diag() {
+    while (true) {
+        TextOut(15,LCD_LINE1,"error: " + NumToStr(error) + "   ", true);
+        TextOut(15,LCD_LINE2,"turn:  " + NumToStr(turn) + "   ", true);
+        TextOut(15,LCD_LINE3,"lread: " + NumToStr(last_read) + "   ", true);
+    }
+}
+task main() {
+    Precedes(run, diag);
+}

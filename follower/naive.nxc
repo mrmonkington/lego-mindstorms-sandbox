@@ -1,0 +1,54 @@
+#define THRESHOLD 50 // typically threshold for light/dark
+#define HYST 5
+#define SPEED 50 // start slow
+#define MOTOR_BOTH OUT_BC
+#define MOTOR_LEFT OUT_B
+#define MOTOR_RIGHT OUT_C
+#define LIGHT IN_3
+#define TURN_FACTOR 5
+
+// this program is a basic zigzagger
+/*
+    4 states:
+      1 off line turning right
+      2 on line turning right
+      3 off line turning left
+      4 on line turning left
+*/
+
+
+void setup() {
+    SetSensorLight(LIGHT);
+}
+
+task main() {
+    setup();
+    OnFwd(MOTOR_BOTH, SPEED);
+    while (true) {
+            // state 1
+            OnFwd(MOTOR_LEFT, SPEED);
+            OnFwd(MOTOR_RIGHT, SPEED / TURN_FACTOR);
+            // debounce
+            Wait(100);
+            // now wait until we find the line
+            until(Sensor(LIGHT) < THRESHOLD - HYST) {
+                // wait
+            };
+            //OnFwd(MOTOR_BOTH, SPEED);
+            Wait(100);
+            // 2
+            until(Sensor(LIGHT) > THRESHOLD + HYST) {
+            };
+            // 3
+            OnFwd(MOTOR_LEFT, SPEED / TURN_FACTOR);
+            OnFwd(MOTOR_RIGHT, SPEED);
+            Wait(100);
+            until(Sensor(LIGHT) < THRESHOLD - HYST) {
+            };
+            //OnFwd(MOTOR_BOTH, SPEED);
+            Wait(100);
+            // 4
+            until(Sensor(LIGHT) > THRESHOLD + HYST) {
+            };
+    }
+}
